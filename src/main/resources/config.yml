@@ -1,0 +1,94 @@
+# Grip - config.yml
+# Dropping something valuable takes a second Q press. Reload with /grip reload.
+
+# How long the second press counts.
+confirm_time: 3s
+
+# Creative players can drop anything straight away.
+ignore_creative: true
+
+# Also ask before an item is thrown by clicking outside the inventory window.
+click_outside: true
+
+# These always ask, whatever the rules below say.
+# Material names or item tags (#minecraft:swords).
+always_confirm:
+  - GOLDEN_APPLE
+  - ENCHANTED_GOLDEN_APPLE
+  - TOTEM_OF_UNDYING
+  - ELYTRA
+  - NETHER_STAR
+  - NETHERITE_INGOT
+  - NETHERITE_SCRAP
+  - DIAMOND
+  - EMERALD
+  - ENDER_PEARL
+  - "#minecraft:shulker_boxes"
+
+# Items that carry any of these always ask, even if they are on the free list.
+protect:
+  # Renamed items.
+  named: true
+  # Items with a custom model from a resource pack.
+  custom_models: true
+  # Enchanted items and enchanted books.
+  enchanted: true
+  # Shulker boxes and bundles that are not empty.
+  containers: true
+
+# Items that can be dropped with one press.
+free_drop:
+  # Everything edible.
+  food: true
+  # Everything that can be placed as a block.
+  blocks: true
+  # Anything else that is not worth a prompt.
+  list:
+    - ROTTEN_FLESH
+    - BONE
+    - BONE_MEAL
+    - STRING
+    - SPIDER_EYE
+    - FERMENTED_SPIDER_EYE
+    - GUNPOWDER
+    - BLAZE_ROD
+    - BLAZE_POWDER
+    - GHAST_TEAR
+    - SLIME_BALL
+    - MAGMA_CREAM
+    - PHANTOM_MEMBRANE
+    - FEATHER
+    - LEATHER
+    - RABBIT_HIDE
+    - RABBIT_FOOT
+    - INK_SAC
+    - GLOW_INK_SAC
+    - PRISMARINE_SHARD
+    - PRISMARINE_CRYSTALS
+    - ARROW
+    - EGG
+    - STICK
+    - FLINT
+    - CLAY_BALL
+    - BRICK
+    - NETHER_BRICK
+    - PAPER
+    - COAL
+    - CHARCOAL
+    - IRON_INGOT
+    - GOLD_INGOT
+    - COPPER_INGOT
+    - IRON_NUGGET
+    - GOLD_NUGGET
+    - LAPIS_LAZULI
+    - REDSTONE
+    - QUARTZ
+    - AMETHYST_SHARD
+    - RAW_IRON
+    - RAW_GOLD
+    - RAW_COPPER
+    - GLASS_BOTTLE
+    - BOWL
+    - WHEAT
+    - WHEAT_SEEDS
+    - SUGAR_CANE

@@ -1,0 +1,7 @@
+name: Grip
+version: '${version}'
+main: dev.grip.GripPlugin
+api-version: '1.21'
+description: Asks for a second Q press before valuable items leave your inventory.
+authors:
+  - Cozy Survival

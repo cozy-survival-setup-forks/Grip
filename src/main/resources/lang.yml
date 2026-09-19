@@ -1,0 +1,43 @@
+# Grip - lang.yml
+# Every message can be sent as chat, action bar or both, with an optional sound.
+# Text supports MiniMessage as well as &a and &#RRGGBB codes.
+
+prompt:
+  # Placeholders: <item>, <time>
+  enabled: true
+  type: [actionbar]
+  chat: "<bold><#FFB59E>GRIP</#FFB59E></bold> <#A7B6C4>⏵</#A7B6C4> <white>Press Q again to drop <#FFD166><item></#FFD166>."
+  actionbar: "<bold><#FFB59E>GRIP</#FFB59E></bold> <#A7B6C4>⏵</#A7B6C4> <white>Press Q again to drop <#FFD166><item></#FFD166>."
+  sound:
+    enabled: true
+    key: "minecraft:block.note_block.bass"
+    source: MASTER
+    volume: 0.8
+    pitch: 1.4
+
+toggle:
+  # Placeholders: <state>
+  enabled: true
+  type: [chat]
+  chat: "<bold><#FFB59E>GRIP</#FFB59E></bold> <#A7B6C4>⏵</#A7B6C4> <white>Drop confirmation has been <state>."
+  sound:
+    enabled: true
+    key: "minecraft:block.note_block.pling"
+    source: MASTER
+    volume: 1.0
+    pitch: 1.2
+
+reload:
+  enabled: true
+  type: [chat]
+  chat: "<bold><#FFB59E>GRIP</#FFB59E></bold> <#A7B6C4>⏵</#A7B6C4> <white>Config and messages <#8BF0A6>reloaded</#8BF0A6>."
+
+players_only:
+  enabled: true
+  type: [chat]
+  chat: "<bold><#FFB59E>GRIP</#FFB59E></bold> <#A7B6C4>⏵</#A7B6C4> <white>This command is <#FF8C8C>for players</#FF8C8C> only."
+
+# Words used for <state>.
+states:
+  enabled: "<#8BF0A6>enabled</#8BF0A6>"
+  disabled: "<#FF8C8C>disabled</#FF8C8C>"
