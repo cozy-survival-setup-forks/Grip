@@ -5,6 +5,7 @@ import dev.grip.confirm.Confirmations;
 import dev.grip.message.Messages;
 import dev.grip.player.PlayerPrefs;
 import dev.grip.rules.DropRules;
+import net.kyori.adventure.text.Component;
 import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -16,6 +17,7 @@ import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.Plugin;
 
 import java.util.function.Supplier;
@@ -100,8 +102,17 @@ public final class DropListener implements Listener {
             return true;
         }
         messages.send(player, "prompt",
-                Messages.component("item", stack.effectiveName()),
+                Messages.component("item", nameOf(stack)),
                 Messages.text("time", settings.get().confirmTime().toSeconds()));
         return false;
+    }
+
+    /** The name a player knows the item by: the custom name if it has one, otherwise the game's own. */
+    private static Component nameOf(ItemStack stack) {
+        final ItemMeta meta = stack.getItemMeta();
+        if (meta != null && meta.hasDisplayName()) {
+            return meta.displayName();
+        }
+        return Component.translatable(stack.getType().translationKey());
     }
 }
