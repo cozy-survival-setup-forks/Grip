@@ -80,6 +80,26 @@ public final class DropListener implements Listener {
         }
     }
 
+    // Pressing Q (or Ctrl+Q) while hovering a slot in any open inventory drops that slot's item
+    // straight away and never fires PlayerDropItemEvent, so it needs its own check here.
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    public void onGuiDrop(InventoryClickEvent event) {
+        if (event.getClick() != ClickType.DROP && event.getClick() != ClickType.CONTROL_DROP) {
+            return;
+        }
+        if (!(event.getWhoClicked() instanceof Player player)) {
+            return;
+        }
+
+        final ItemStack stack = event.getCurrentItem();
+        if (stack == null || !shouldAsk(player, stack)) {
+            return;
+        }
+        if (!confirm(player, stack)) {
+            event.setCancelled(true);
+        }
+    }
+
     @EventHandler
     public void onQuit(PlayerQuitEvent event) {
         confirmations.forget(event.getPlayer().getUniqueId());
