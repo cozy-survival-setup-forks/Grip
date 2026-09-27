@@ -16,6 +16,11 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
+/**
+ * Grip: asks for a second Q press before a valuable item leaves the player's inventory.
+ *
+ * @author Groovified, Blockie Studios
+ */
 public class GripPlugin extends JavaPlugin {
 
     private volatile Settings settings;
