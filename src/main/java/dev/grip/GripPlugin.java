@@ -46,6 +46,7 @@ public class GripPlugin extends JavaPlugin {
         final GripCommand command = new GripCommand(this, prefs, messages);
         getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS, event ->
                 event.registrar().register(command.build().build(), "Drop confirmation settings", List.of()));
+        Metrics.start(this);
         Banner.print(this, "Thanks for keeping a fumbled Q from costing anyone their gear.");
     }
 
