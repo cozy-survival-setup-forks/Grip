@@ -29,6 +29,17 @@ public class GripPlugin extends JavaPlugin {
 
     @Override
     public void onEnable() {
+        try {
+            enableInner();
+        } catch (RuntimeException e) {
+            getLogger().log(java.util.logging.Level.SEVERE, "Grip failed to start and will be disabled. This is "
+                    + "usually a bad config.yml or lang.yml - check the warnings above this, or delete the whole "
+                    + "plugins/Grip folder to regenerate defaults.", e);
+            getServer().getPluginManager().disablePlugin(this);
+        }
+    }
+
+    private void enableInner() {
         saveDefaultConfig();
         applyConfig();
 
