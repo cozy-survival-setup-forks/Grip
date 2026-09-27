@@ -23,6 +23,11 @@ class UtilTest {
     }
 
     @Test
+    void rejectsOverflowInsteadOfWrappingSilently() {
+        assertThrows(IllegalArgumentException.class, () -> Durations.parse("999999999999999999d"));
+    }
+
+    @Test
     void convertsLegacyCodes() {
         assertEquals("<#FF8C8C>hi<white>", Legacy.toMiniMessage("&#FF8C8Chi&f"));
         assertEquals("<bold>plain</bold>", Legacy.toMiniMessage("<bold>plain</bold>"));

@@ -54,6 +54,9 @@ public final class Messages {
         final YamlConfiguration lang = YamlConfiguration.loadConfiguration(file);
         try (Reader defaults = new InputStreamReader(plugin.getResource("lang.yml"), StandardCharsets.UTF_8)) {
             lang.setDefaults(YamlConfiguration.loadConfiguration(defaults));
+            // Without this, a key missing from an admin's older lang.yml is just absent - not
+            // filled in from the bundled defaults - so that message silently stops sending.
+            lang.options().copyDefaults(true);
         } catch (IOException e) {
             plugin.getLogger().warning("Could not read the bundled lang.yml: " + e.getMessage());
         }
@@ -80,7 +83,10 @@ public final class Messages {
                         Sound.Source.valueOf(soundSection.getString("source", "MASTER").toUpperCase(Locale.ROOT)),
                         (float) soundSection.getDouble("volume", 1.0),
                         (float) soundSection.getDouble("pitch", 1.0));
-            } catch (IllegalArgumentException e) {
+            } catch (RuntimeException e) {
+                // Catches both a bad Sound.Source name (IllegalArgumentException) and a bad
+                // namespaced key (InvalidKeyException, which is its own RuntimeException and
+                // was previously missed here - it used to take the whole plugin down on enable).
                 plugin.getLogger().warning("lang.yml: bad sound for '" + key + "', it will play no sound");
             }
         }

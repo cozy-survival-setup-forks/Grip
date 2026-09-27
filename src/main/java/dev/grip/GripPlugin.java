@@ -8,8 +8,12 @@ import dev.grip.message.Messages;
 import dev.grip.player.PlayerPrefs;
 import dev.grip.rules.DropRules;
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
+import org.bukkit.configuration.InvalidConfigurationException;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.List;
 
 public class GripPlugin extends JavaPlugin {
@@ -39,11 +43,23 @@ public class GripPlugin extends JavaPlugin {
                 event.registrar().register(command.build().build(), "Drop confirmation settings", List.of()));
     }
 
-    /** Re-reads config.yml and lang.yml. */
-    public void reload() {
+    /**
+     * Re-reads config.yml and lang.yml. Returns false and leaves the settings already loaded in
+     * place if config.yml doesn't parse - {@link #reloadConfig()} would otherwise silently swap
+     * in an empty config (and so the bundled defaults) with no error beyond a console log.
+     */
+    public boolean reload() {
+        final File configFile = new File(getDataFolder(), "config.yml");
+        try {
+            new YamlConfiguration().load(configFile);
+        } catch (InvalidConfigurationException | IOException e) {
+            getLogger().warning("config.yml is broken, keeping the settings already loaded: " + e.getMessage());
+            return false;
+        }
         reloadConfig();
         applyConfig();
         messages.load();
+        return true;
     }
 
     private void applyConfig() {

@@ -24,6 +24,16 @@ always_confirm:
   - EMERALD
   - ENDER_PEARL
   - "#minecraft:shulker_boxes"
+  # free_drop.blocks below makes every placeable block free by default, which would otherwise
+  # include these even though their raw/ingot form above always asks.
+  - DIAMOND_BLOCK
+  - EMERALD_BLOCK
+  - NETHERITE_BLOCK
+  - BEACON
+  - CONDUIT
+  - DRAGON_EGG
+  - SPAWNER
+  - PLAYER_HEAD
 
 # Items that carry any of these always ask, even if they are on the free list.
 protect:

@@ -28,12 +28,18 @@ public final class Durations {
         final Matcher matcher = PART.matcher(s);
         long seconds = 0;
         int end = 0;
-        while (matcher.find()) {
-            if (matcher.start() != end) {
-                break;
+        try {
+            while (matcher.find()) {
+                if (matcher.start() != end) {
+                    break;
+                }
+                end = matcher.end();
+                seconds = Math.addExact(seconds, Math.multiplyExact(Long.parseLong(matcher.group(1)), unitSeconds(matcher.group(2).charAt(0))));
             }
-            end = matcher.end();
-            seconds += Long.parseLong(matcher.group(1)) * unitSeconds(matcher.group(2).charAt(0));
+        } catch (ArithmeticException e) {
+            // A silently-overflowed value would land as either a huge or negative Duration,
+            // and either one breaks confirm_time (see Settings.confirmTime).
+            throw new IllegalArgumentException("Duration too large: " + text, e);
         }
         if (end == 0 || end != s.length()) {
             throw new IllegalArgumentException("Not a duration: " + text);

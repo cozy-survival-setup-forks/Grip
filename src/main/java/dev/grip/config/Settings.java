@@ -42,18 +42,35 @@ public record Settings(Duration confirmTime, boolean ignoreCreative, boolean cli
                         materials(cfg, "free_drop.list", log)));
     }
 
+    private static final Duration CONFIRM_TIME_MAX = Duration.ofSeconds(60);
+
     private static Duration confirmTime(FileConfiguration cfg, Logger log) {
         final String raw = cfg.getString("confirm_time", "3s");
+        final Duration time;
         try {
-            final Duration time = Durations.parse(raw);
-            return time.isZero() ? Duration.ofSeconds(3) : time;
+            time = Durations.parse(raw);
         } catch (IllegalArgumentException e) {
             log.warning("confirm_time: '" + raw + "' is not a duration, using 3s");
             return Duration.ofSeconds(3);
         }
+        if (time.isZero()) {
+            return Duration.ofSeconds(3);
+        }
+        // A value this large would overflow Duration.toMillis() on every drop (see
+        // DropListener.confirm), and nobody wants a "press Q again" window longer than a minute.
+        if (time.isNegative() || time.compareTo(CONFIRM_TIME_MAX) > 0) {
+            log.warning("confirm_time: '" + raw + "' must be between 1s and 60s, using 3s");
+            return Duration.ofSeconds(3);
+        }
+        return time;
     }
 
     private static Set<Material> materials(FileConfiguration cfg, String path, Logger log) {
+        if (cfg.isSet(path) && !cfg.isList(path)) {
+            // getStringList silently returns the bundled default for this instead of the admin's
+            // value if it isn't written as a YAML list - worth a warning, since it looks like it worked.
+            log.warning(path + " should be a list (e.g. \"[DIAMOND, NETHERITE_INGOT]\"), ignoring it");
+        }
         final Set<Material> found = EnumSet.noneOf(Material.class);
         for (String entry : cfg.getStringList(path)) {
             found.addAll(resolve(entry, path, log));

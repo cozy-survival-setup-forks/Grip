@@ -47,8 +47,8 @@ public final class GripCommand {
     }
 
     private int reload(CommandContext<CommandSourceStack> ctx) {
-        plugin.reload();
-        messages.send(ctx.getSource().getSender(), "reload");
+        final boolean ok = plugin.reload();
+        messages.send(ctx.getSource().getSender(), ok ? "reload" : "reload_failed");
         return Command.SINGLE_SUCCESS;
     }
 }

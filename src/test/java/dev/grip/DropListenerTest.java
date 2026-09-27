@@ -63,8 +63,9 @@ class DropListenerTest {
         assertTrue(drop(Material.DIAMOND_SWORD).isCancelled());
     }
 
-    // Q on a hovered slot inside an open inventory never fires PlayerDropItemEvent, so it needs
-    // its own guard; this is the bypass that let valuables out with no prompt at all.
+    // Q on a hovered slot inside an open inventory also needs its own guard here, since the two
+    // Q presses land as InventoryClickEvents. Paper additionally fires a PlayerDropItemEvent for
+    // the second one right after (see the next test) - this only checks the click side.
     @Test
     void qOnAHoveredSlotInAnOpenInventoryAlsoAsks() {
         player.getInventory().setItem(0, new ItemStack(Material.DIAMOND_SWORD));
@@ -79,5 +80,24 @@ class DropListenerTest {
                 view, InventoryType.SlotType.QUICKBAR, 0, ClickType.DROP, InventoryAction.DROP_ONE_SLOT);
         server.getPluginManager().callEvent(second);
         assertFalse(second.isCancelled());
+    }
+
+    // Regression test: an approved GUI drop used to be asked about again when the resulting
+    // PlayerDropItemEvent fired, which on a full inventory made Bukkit's cancel-and-hand-back
+    // destroy the item instead of dropping it.
+    @Test
+    void anApprovedGuiDropIsNotAskedAgainWhenTheDropEventFires() {
+        player.getInventory().setItem(0, new ItemStack(Material.DIAMOND_SWORD));
+        final InventoryView view = player.openInventory(player.getInventory());
+
+        final InventoryClickEvent first = new InventoryClickEvent(
+                view, InventoryType.SlotType.QUICKBAR, 0, ClickType.DROP, InventoryAction.DROP_ONE_SLOT);
+        server.getPluginManager().callEvent(first);
+        final InventoryClickEvent second = new InventoryClickEvent(
+                view, InventoryType.SlotType.QUICKBAR, 0, ClickType.DROP, InventoryAction.DROP_ONE_SLOT);
+        server.getPluginManager().callEvent(second);
+        assertFalse(second.isCancelled());
+
+        assertFalse(drop(Material.DIAMOND_SWORD).isCancelled());
     }
 }

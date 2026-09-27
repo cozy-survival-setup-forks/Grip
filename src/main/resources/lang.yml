@@ -32,6 +32,11 @@ reload:
   type: [chat]
   chat: "<bold><#FFB59E>GRIP</#FFB59E></bold> <#A7B6C4>⏵</#A7B6C4> <white>Config and messages <#8BF0A6>reloaded</#8BF0A6>."
 
+reload_failed:
+  enabled: true
+  type: [chat]
+  chat: "<bold><#FFB59E>GRIP</#FFB59E></bold> <#A7B6C4>⏵</#A7B6C4> <white>config.yml has a mistake in it - <#FF8C8C>keeping the old settings</#FF8C8C>. Check the console."
+
 players_only:
   enabled: true
   type: [chat]

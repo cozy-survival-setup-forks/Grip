@@ -12,6 +12,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.ClickType;
+import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.PlayerDropItemEvent;
@@ -20,6 +21,9 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.Plugin;
 
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
 import java.util.function.Supplier;
 
 /**
@@ -36,6 +40,11 @@ public final class DropListener implements Listener {
     private final Confirmations confirmations;
     private final PlayerPrefs prefs;
     private final Messages messages;
+    // Main thread only. A GUI click that already asked (or was told to skip asking) marks the
+    // player here so the PlayerDropItemEvent it fires right after doesn't ask a second time -
+    // asking twice means the second answer arrives as a cancel with nothing to hand the item
+    // back to (see onDrop/canReturn), which drops it out of a container or deletes it outright.
+    private final Set<UUID> clickApproved = new HashSet<>();
 
     public DropListener(Plugin plugin, Supplier<Settings> settings, Supplier<DropRules> rules,
                         Confirmations confirmations, PlayerPrefs prefs, Messages messages) {
@@ -50,8 +59,17 @@ public final class DropListener implements Listener {
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onDrop(PlayerDropItemEvent event) {
         final Player player = event.getPlayer();
+        if (clickApproved.remove(player.getUniqueId())) {
+            return;
+        }
         final ItemStack stack = event.getItemDrop().getItemStack();
         if (!shouldAsk(player, stack)) {
+            return;
+        }
+        if (!canReturn(player, stack)) {
+            // Cancelling here would delete the item: Bukkit hands a cancelled drop back to the
+            // main hand or inventory and silently drops anything that doesn't fit. Letting it
+            // fall is worse than losing nothing, but better than losing the item outright.
             return;
         }
         if (!confirm(player, stack)) {
@@ -63,8 +81,9 @@ public final class DropListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onClickOutside(InventoryClickEvent event) {
-        if (!settings.get().clickOutside() || event.getSlotType() != InventoryType.SlotType.OUTSIDE
-                || event.getClick() != ClickType.LEFT && event.getClick() != ClickType.RIGHT) {
+        if (event.getSlotType() != InventoryType.SlotType.OUTSIDE
+                || (event.getClick() != ClickType.LEFT && event.getClick() != ClickType.RIGHT
+                        && event.getClick() != ClickType.SHIFT_LEFT && event.getClick() != ClickType.SHIFT_RIGHT)) {
             return;
         }
         if (!(event.getWhoClicked() instanceof Player player)) {
@@ -75,16 +94,28 @@ public final class DropListener implements Listener {
         if (!shouldAsk(player, stack)) {
             return;
         }
-        if (!confirm(player, stack)) {
+        if (!settings.get().clickOutside()) {
+            // Setting says don't ask for outside drops, but the drop still happens and still
+            // fires PlayerDropItemEvent right after - mark it approved instead of asking there.
+            approveNextDrop(player);
+            return;
+        }
+        if (confirm(player, stack)) {
+            approveNextDrop(player);
+        } else {
             event.setCancelled(true);
         }
     }
 
     // Pressing Q (or Ctrl+Q) while hovering a slot in any open inventory drops that slot's item
-    // straight away and never fires PlayerDropItemEvent, so it needs its own check here.
+    // right away, and it also fires a PlayerDropItemEvent for that same drop a moment later -
+    // approveNextDrop keeps onDrop from asking about it twice.
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onGuiDrop(InventoryClickEvent event) {
         if (event.getClick() != ClickType.DROP && event.getClick() != ClickType.CONTROL_DROP) {
+            return;
+        }
+        if (event.getAction() != InventoryAction.DROP_ONE_SLOT && event.getAction() != InventoryAction.DROP_ALL_SLOT) {
             return;
         }
         if (!(event.getWhoClicked() instanceof Player player)) {
@@ -95,14 +126,40 @@ public final class DropListener implements Listener {
         if (stack == null || !shouldAsk(player, stack)) {
             return;
         }
-        if (!confirm(player, stack)) {
+        if (confirm(player, stack)) {
+            approveNextDrop(player);
+        } else {
             event.setCancelled(true);
         }
     }
 
     @EventHandler
     public void onQuit(PlayerQuitEvent event) {
-        confirmations.forget(event.getPlayer().getUniqueId());
+        final UUID id = event.getPlayer().getUniqueId();
+        confirmations.forget(id);
+        clickApproved.remove(id);
+    }
+
+    private void approveNextDrop(Player player) {
+        final UUID id = player.getUniqueId();
+        clickApproved.add(id);
+        plugin.getServer().getScheduler().runTask(plugin, () -> clickApproved.remove(id));
+    }
+
+    /** Whether the player's inventory has room for the whole stack if a drop of it is cancelled. */
+    private static boolean canReturn(Player player, ItemStack drop) {
+        int room = 0;
+        for (ItemStack slot : player.getInventory().getStorageContents()) {
+            if (slot == null || slot.getType().isAir()) {
+                room += drop.getMaxStackSize();
+            } else if (slot.isSimilar(drop)) {
+                room += Math.max(0, slot.getMaxStackSize() - slot.getAmount());
+            }
+            if (room >= drop.getAmount()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private boolean shouldAsk(Player player, ItemStack stack) {
