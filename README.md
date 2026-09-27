@@ -36,6 +36,12 @@ Throwing an item by clicking outside the inventory window asks the same way.
 
 `grip.bypass` lets someone drop anything with a single press.
 
+## Telemetry
+
+On startup Grip sends a small anonymous beacon (plugin name/version, server software/version,
+online/max player counts, and a random ID with no player data) so we know which versions are in
+use. Turn it off with `metrics.enabled: false` in `config.yml`.
+
 ## Building
 
 Needs Java 21.
@@ -49,3 +55,5 @@ The jar ends up in `build/libs`. To try it on a local server:
 ```
 ./gradlew runServer
 ```
+
+See `LICENSE`: free to run on your own servers, not for redistribution or resale.
