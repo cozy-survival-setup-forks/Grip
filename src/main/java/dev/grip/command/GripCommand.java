@@ -33,7 +33,13 @@ public final class GripCommand {
                         .executes(this::toggle))
                 .then(Commands.literal("reload")
                         .requires(source -> source.getSender().hasPermission(Perms.ADMIN))
-                        .executes(this::reload));
+                        .executes(this::reload))
+                .then(Commands.literal("doctor")
+                        .requires(source -> source.getSender().hasPermission(Perms.ADMIN))
+                        .executes(this::doctor))
+                .then(Commands.literal("backup")
+                        .requires(source -> source.getSender().hasPermission(Perms.ADMIN))
+                        .then(Commands.literal("now").executes(this::backup)));
     }
 
     private int toggle(CommandContext<CommandSourceStack> ctx) {
@@ -43,6 +49,18 @@ public final class GripCommand {
         } else {
             messages.send(sender, "players_only");
         }
+        return Command.SINGLE_SUCCESS;
+    }
+
+    private int doctor(CommandContext<CommandSourceStack> ctx) {
+        final CommandSender sender = ctx.getSource().getSender();
+        plugin.doctor().forEach(sender::sendPlainMessage);
+        return Command.SINGLE_SUCCESS;
+    }
+
+    private int backup(CommandContext<CommandSourceStack> ctx) {
+        final CommandSender sender = ctx.getSource().getSender();
+        sender.sendPlainMessage(plugin.backupNow() ? "Backup made and checked." : "The backup FAILED, see the console.");
         return Command.SINGLE_SUCCESS;
     }
 

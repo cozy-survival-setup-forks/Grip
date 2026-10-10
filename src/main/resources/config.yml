@@ -1,3 +1,4 @@
+config-version: 1
 # Grip - config.yml
 # Dropping something valuable takes a second Q press. Reload with /grip reload.
 
@@ -107,4 +108,3 @@ free_drop:
 # Set enabled to false to turn it off entirely.
 metrics:
   enabled: true
-  interval-minutes: 45

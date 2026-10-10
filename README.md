@@ -32,15 +32,26 @@ Throwing an item by clicking outside the inventory window asks the same way.
 | Command | What it does | Permission |
 | --- | --- | --- |
 | `/grip toggle` | Turn the prompt on or off for yourself | `grip.toggle` (everyone) |
-| `/grip reload` | Reload `config.yml` and `lang.yml` | `grip.admin` (ops) |
+| `/grip reload` | Reload `config.yml` and `lang.yml`. A value with a mistake cancels the reload and the old settings stay | `grip.admin` (ops) |
+| `/grip doctor` | Health of the files, versions, last backup and recent save failures (no player data) | `grip.admin` |
+| `/grip backup now` | A checked copy of the settings and data files in `backups/` | `grip.admin` |
 
 `grip.bypass` lets someone drop anything with a single press.
+
+## Keeping your files safe
+
+- `config.yml` and `lang.yml` start with a `config-version` / `lang-version` number. After an update, new settings are added to your files with their comments, and nothing you changed is touched. The old file is kept next to it as `config.yml.<date>.bak` (the newest 5). A setting is only removed when the changelog says so.
+- A value with a mistake (a negative time, an item that does not exist, text where a number belongs) is named in the console by file and key. On a reload the settings in use stay as they were.
+- Files are written to a temporary file and moved into place, with the previous version kept as `.bak`. A file that cannot be read is restored from its `.bak`, and the unreadable one is kept as `.broken-<time>`.
+- A file with a version newer than the plugin knows is left alone and a warning is logged.
 
 ## Telemetry
 
 On startup Grip sends a small anonymous beacon (plugin name/version, server software/version,
 online/max player counts, and a random ID with no player data) so we know which versions are in
-use. Turn it off with `metrics.enabled: false` in `config.yml`.
+use. Turn it off with `metrics.enabled: false` in `config.yml`. The random ID is kept as `server-id`
+in `data.yml` (older versions kept it in a `.server-id` file, which is moved over unchanged).
+The address and the interval are fixed in the plugin and are not settings.
 
 ## Building
 
